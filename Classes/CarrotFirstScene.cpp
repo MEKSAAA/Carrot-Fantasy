@@ -2,6 +2,7 @@
 
 #include "CarrotFirstScene.h"
 #include "SecondScene.h"
+#include "TowerScene.h"
 #include "Map1Scene.h"
 #include "SimpleAudioEngine.h"
 

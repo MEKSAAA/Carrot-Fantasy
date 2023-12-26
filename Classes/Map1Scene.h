@@ -14,11 +14,10 @@ public:
     static cocos2d::Scene* createScene();
 
     virtual bool init();
-
-    // a selector callback
+    void Map1Scene::createTower(const cocos2d::Vec2& position);
     void menuCloseCallback(cocos2d::Ref* pSender);
+    bool Map1Scene::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
 
-    // implement the "static create()" method manually
     CREATE_FUNC(Map1Scene);
 };
 

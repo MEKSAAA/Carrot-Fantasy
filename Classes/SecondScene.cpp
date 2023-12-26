@@ -1,5 +1,6 @@
 #include "Map1Scene.h"
 #include "Map2Scene.h"
+#include "TowerScene.h"
 #include "SecondScene.h"
 #include"CarrotFirstScene.h"
 #include "SimpleAudioEngine.h"

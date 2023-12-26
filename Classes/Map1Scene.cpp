@@ -1,6 +1,7 @@
 #include "CarrotFirstScene.h"
 #include "SecondScene.h"
 #include "Map1Scene.h"
+#include "TowerScene.h"
 #include "SimpleAudioEngine.h"
 using namespace std;
 
@@ -54,6 +55,12 @@ bool Map1Scene::init()
     this->addChild(sprite_1, 2);
     /*-------------------------------------------------------------------------------------------------------------------------*/
 
+    auto map = TMXTiledMap::create("map_1.tmx");    //初始化地图
+    addChild(map);
+    auto Listener = EventListenerTouchOneByOne::create();//初始化监听器
+    Listener->onTouchBegan = CC_CALLBACK_2(Map1Scene::onTouchBegan, this);
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(Listener, this);
+
 
     auto closeItem = MenuItemImage::create(                 //点击，需修改
         "CloseNormal.png",
@@ -82,6 +89,20 @@ bool Map1Scene::init()
     return true;
 }
 
+void Map1Scene::createTower(const Vec2& position)
+{
+    auto tower = TowerScene::create();
+    tower->setPosition(position);
+
+    addChild(tower,3);
+}
+
+bool Map1Scene::onTouchBegan(Touch* touch, Event* event)
+{
+    Vec2 touchPos = touch->getLocation();
+    createTower(touchPos);
+    return true;
+}
 
 void Map1Scene::menuCloseCallback(Ref* pSender)
 {
