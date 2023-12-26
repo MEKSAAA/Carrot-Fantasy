@@ -3,6 +3,7 @@
 #include "Map1Scene.h"
 #include "TowerScene.h"
 #include "SimpleAudioEngine.h"
+#include "Enemy.h"
 using namespace std;
 
 USING_NS_CC;
@@ -60,6 +61,20 @@ bool Map1Scene::init()
     auto Listener = EventListenerTouchOneByOne::create();//初始化监听器
     Listener->onTouchBegan = CC_CALLBACK_2(Map1Scene::onTouchBegan, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(Listener, this);
+
+
+    /*-------------------------------------------------------------------------------------------------------------------------*/
+
+// 创建敌人
+    Enemy* enemy1 = Enemy::createEnemy("F11.png");
+    enemy1->setPath({ Vec2(275, 455), Vec2(275, 190), Vec2(670, 190), Vec2(670, 455), Vec2(820, 455) }); // 设置敌人的移动路径
+    enemy1->setSpeed(50.0f);  //  设置敌人速度
+    enemy1->setStartPosition(Vec2(150, 455));  // 设置起始位置
+    addChild(enemy1, 3);
+    enemy1->move(); // 启动敌人的移动
+
+
+    /*-------------------------------------------------------------------------------------------------------------------------*/
 
 
     auto closeItem = MenuItemImage::create(                 //点击，需修改
