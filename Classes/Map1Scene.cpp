@@ -1,9 +1,10 @@
 #include "CarrotFirstScene.h"
 #include "SecondScene.h"
 #include "Map1Scene.h"
-#include "TowerScene.h"
+#include "Tower.h"
 #include "SimpleAudioEngine.h"
 #include "Enemy.h"
+
 using namespace std;
 
 USING_NS_CC;
@@ -56,11 +57,30 @@ bool Map1Scene::init()
     this->addChild(sprite_1, 2);
     /*-------------------------------------------------------------------------------------------------------------------------*/
 
-    auto map = TMXTiledMap::create("map_1.tmx");    //初始化地图
-    addChild(map);
-    auto Listener = EventListenerTouchOneByOne::create();//初始化监听器
+    map = TMXTiledMap::create("map_1.tmx");
+    addChild(map);//初始化地图
+    objectGroup = map->getObjectGroup("bottle");   //获取瓦片地图中的point对象层
+    objs = objectGroup->getObjects();
+
+    /*for (const auto& obj : objs)    //放置按钮
+    {
+        auto valueMap = obj.asValueMap();
+        auto button = ui::Button::create("select_01.png", "select_01.png");
+        //按钮的位置坐标
+        button->setPosition(Vec2(valueMap["x"].asFloat(), valueMap["y"].asFloat()));
+        button->setVisible(false);
+        button->addTouchEventListener([button](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+            if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+                button->setVisible(true);
+            }
+            });
+        addChild(button);
+    }*/
+    auto Listener = cocos2d::EventListenerTouchOneByOne::create();//初始化监听器
     Listener->onTouchBegan = CC_CALLBACK_2(Map1Scene::onTouchBegan, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(Listener, this);
+
+    
 
 
     /*-------------------------------------------------------------------------------------------------------------------------*/
@@ -104,7 +124,7 @@ bool Map1Scene::init()
     return true;
 }
 
-void Map1Scene::createTower(const Vec2& position)
+/*void Map1Scene::createTower(const Vec2& position)
 {
     auto tower = TowerScene::create();
     tower->setPosition(position);
@@ -112,11 +132,95 @@ void Map1Scene::createTower(const Vec2& position)
     addChild(tower,3);
 }
 
+Vec2 Map1Scene::tileCoordForPosition(const Vec2& position)//转换触摸位置到瓦片坐标
+{
+    int x = position.x / layer->getMapTileSize().width;
+    int y = ((layer->getLayerSize().height * layer->getMapTileSize().height) - position.y) / layer->getMapTileSize().height;
+    return Vec2(x, y);
+}
+
 bool Map1Scene::onTouchBegan(Touch* touch, Event* event)
 {
     Vec2 touchPos = touch->getLocation();
-    createTower(touchPos);
+    Vec2 tileCoord = tileCoordForPosition(touchPos);
+
+    int tileGID = layer->getTileGIDAt(tileCoord);
+
+    if (tileGID != 0) {
+        selectButton->setVisible(true);
+        selectButton->setPosition(tileCoord);
+    }
+
+    selectButton->setVisible(false);
+
     return true;
+}*/
+bool Map1Scene::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
+{
+    if (selecting = true && selection != NULL) {
+        removeChild(selection, true);
+        selection = NULL;
+        selecting = false;
+        return true;
+    }
+    Vec2 touchPos = touch->getLocation();
+    Vec2 mapPos = this->convertToNodeSpace(touchPos);
+
+    if (&objs != NULL) {
+
+        for (const auto& obj : objs) {
+            auto properties = obj.asValueMap();
+            int x = properties["x"].asInt();
+            int y = properties["y"].asInt();
+            int width = properties["width"].asInt();
+            int height = properties["height"].asInt();
+
+            if (mapPos.x >= x && mapPos.x <= x + width && mapPos.y >= y && mapPos.y <= y + height) {
+                selection = Sprite::create("select_01.png");
+                selection->setPosition(Vec2(x, y));
+                addChild(selection,3);
+                selecting = true;
+
+                towerButton1 = cocos2d::ui::Button::create("Bottle01.png");
+                towerButton1->setPosition(Vec2(x, y + 20));
+                selection->addChild(towerButton1);
+                towerButton1->addClickEventListener([=](cocos2d::Ref* sender) {buttonClickCallBack(sender, Vec2(x, y)); });
+                /*towerButton1->setTouchEnabled(true);
+                towerButton1->addTouchEventListener([this,x,y](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+                    if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+                        removeChild(selection, true);
+                        selection = NULL;
+                        selecting = false;
+                        auto bottom = Sprite::create("Bottle_3.png");
+                        bottom->setPosition(Vec2(x, y));
+                        addChild(bottom, 3);
+                    }
+                    else{
+                        removeChild(selection, true);
+                        selection = NULL;
+                        selecting = false;
+                    }
+                    });*/
+                //towerButton1.
+            }
+        }
+    }
+   
+    return true;
+}
+
+void Map1Scene::buttonClickCallBack(cocos2d::Ref* sender, const cocos2d::Vec2& pos)
+{
+    auto ob = find_if(objs.begin(), objs.end(), [=](const Value& cnt) {
+        auto cntVM = cnt.asValueMap();
+        return pos.x ==cntVM["x"].asInt() && pos.y == cntVM["y"].asInt(); });//游标遍历，在objs中找到当前要放塔的位置
+    if (ob != objs.end())
+        objs.erase(ob);//从objs中删除放了塔的坐标，这样就不会再放第二次了
+    removeChild(selection, true);//删掉选择方框和按钮
+    selection = NULL;
+    selecting = false;
+    BottleTower* newTower = BottleTower::create();
+    newTower->PlaceTower(pos, bottle);//放塔
 }
 
 void Map1Scene::menuCloseCallback(Ref* pSender)
