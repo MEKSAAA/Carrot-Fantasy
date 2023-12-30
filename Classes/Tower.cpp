@@ -13,10 +13,10 @@ bool Tower::init()
     {
         return false;
     }
-    lv = 1;
+    lv = 1;  //等级
     return true;
 }
-
+//放置炮塔
 void Tower::PlaceTower(const Vec2& pos)
 {
     bottom->setPosition(Vec2(pos.x + 20, pos.y + 50));
@@ -26,7 +26,7 @@ void Tower::PlaceTower(const Vec2& pos)
     oriTower->setPosition(30, 35);
     bottom->addChild(oriTower);
 }
-
+//计算炮塔旋转角度
 inline void CorrectDegree(const Point& normalizedVector, const float& radians, float& degree)//根据象限校正角度
 {
     if (normalizedVector.x == 0)
@@ -42,7 +42,7 @@ inline void CorrectDegree(const Point& normalizedVector, const float& radians, f
     else if(normalizedVector.x > 0 && normalizedVector.y < 0)
         degree = radians / M_PI * 180;
 }
-
+//将炮塔旋转到正确位置
 void Tower::Rotate(const Vec2& enePos)
 {
     Point shootVector = enePos - Vec2(loca.x + 20, loca.y + 50);
@@ -66,6 +66,8 @@ void Tower::Rotate(const Vec2& enePos)
     oriTower->runAction(RotateTo::create(rotateDuration, -degree));  //想要屏幕旋转就把前缀去掉
 }
 
+/*----------------------------------------------------待实现----------------------------------------*/
+//射击函数-----暂未实现
 void Tower::Attack(Sprite* t)
 {
     target = t;
@@ -75,10 +77,11 @@ void Tower::Attack(Sprite* t)
     //bullets.push_back(bullet);
     Shoot(bullet);
 }
-
+//射击函数-----暂未实现
 void Tower::Shoot(Sprite* bullet)
 {
     Vec2 shootVec = target->getPosition() - bullet->getPosition();
     auto moveAction = MoveBy::create(5.0f, shootVec);
     bullet->runAction(moveAction);
 }
+/*----------------------------------------------------待实现----------------------------------------*/

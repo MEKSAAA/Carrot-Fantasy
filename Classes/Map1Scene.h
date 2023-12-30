@@ -24,6 +24,7 @@ public:
     static cocos2d::Scene* createScene();
 
     virtual bool init();
+    void shootFinish(Node* pNode);  //射击
     void menuCloseCallback(cocos2d::Ref* pSender);
     bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
 
@@ -68,11 +69,13 @@ private:
     cocos2d::ValueVector objs;//存放可以建塔的空地
     //cocos2d::ValueVector tws;//存放已经建了塔的地方
     //std::vector<Tower*> existedTW;
-
+    //对于触摸建塔、塔的升级、删除等操作
     void createTowerButton(const cocos2d::Vec2& position);
     void buttonClickCallBack(cocos2d::Ref* sender, const cocos2d::Vec2& pos, const int towerType);
     void buttonClickCallBack1(cocos2d::Ref* sender, const cocos2d::Vec2& pos);
     void buttonClickCallBackDLT(cocos2d::Ref* sender);
+    void buttonClickCallBackUPG(cocos2d::Ref* sender, cocos2d::Sprite* upgBottle);
+    //对于触摸建塔、塔的升级、删除等操作
 
     bool selecting = false;//当前是否正在选择状态
     cocos2d::Sprite* selection;//储存半透明矩形选中框
@@ -80,7 +83,7 @@ private:
     cocos2d::ui::Button* towerButton1;
     cocos2d::ui::Button* towerButton2;
     cocos2d::ui::Button* towerButton3;
-
+    //升级和删除
     cocos2d::ui::Button* dltButton;
     cocos2d::ui::Button* upgButton;
 };

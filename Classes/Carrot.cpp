@@ -20,7 +20,7 @@ bool Carrot::init()
 	}
 	//设置初始位置
 	//setPosition(Vec2(820, 460));
-
+/*-------------------------------------------------------------萝卜初始动画-------------------------------------------------------------*/
 	Vector<SpriteFrame*>allFrame;
 	for (int i = 0; i < 3; i++)
 	{
@@ -29,18 +29,13 @@ bool Carrot::init()
 		allFrame.pushBack(sf);
 	}
 	Animation* animation = Animation::createWithSpriteFrames(allFrame);
-	animation->setDelayPerUnit(0.1);
+	animation->setDelayPerUnit(0.3);
 	Animate* animate = Animate::create(animation);
 	spcarrot = Sprite::create();
 	spcarrot->runAction(RepeatForever::create(animate));
 	this->addChild(spcarrot, 2);
 	spcarrot->setPosition(customPosition);
-	//this->schedule(schedule_selector(Map1Scene::))
-
-	//触摸监听器，模拟被咬
-	//auto Listener = cocos2d::EventListenerTouchOneByOne::create();
-	//Listener->onTouchBegan = CC_CALLBACK_2(Carrot::onTouchBegan, this);
-	//_eventDispatcher->addEventListenerWithSceneGraphPriority(Listener, this);
+	/*-------------------------------------------------------------萝卜初始动画-------------------------------------------------------------*/
 
 	return true;
 }
@@ -50,7 +45,6 @@ void Carrot::biteAnimation()
 	//if(spcarrot)
 	    this->removeChild(spcarrot, false);
 
-	//string carrot = "hlb1_" + to_string(9 - num) + ".png";
 	Vector<SpriteFrame*>allFrame;
 	for (int i = 0; i < 2; i++)
 	{
@@ -66,41 +60,25 @@ void Carrot::biteAnimation()
 	this->addChild(spcarrot, 2);
 	spcarrot->setPosition(customPosition);
 	num++;
-	/*auto hlb = Sprite::create(carrot);
-	auto scaleDown = cocos2d::ScaleTo::create(0.1f, 0.8f);
-	auto scaleUp = cocos2d::ScaleTo::create(0.1f, 1.0f);
-	auto sequence = cocos2d::Sequence::create(scaleDown, scaleUp, nullptr);
-	runAction(sequence);
-	if (hlb == nullptr)
-	{
-		problemLoading("carrot");
-	}
-	else
-	{
-		hlb->setPosition(Vec2(820,460));
-		this->addChild(hlb, 2);
-	}
-	num++;*/
-
 }
 
-//模拟被咬
+//模拟被咬---------------touch_test
 bool Carrot::onTouchBegan(cocos2d::Touch* touch,cocos2d::Event* event)
 {
 	biteAnimation();
 	return true;
 }
-
+//设置生命值
 void Carrot::setHealth(int health)
 {
 	health_ = health;
 }
-
+//得到生命值
 int Carrot::getHealth()
 {
 	return health_;
 }
-
+//萝卜位置
 void Carrot::setPosition(const cocos2d::Vec2& position)
 {
 	customPosition = position;

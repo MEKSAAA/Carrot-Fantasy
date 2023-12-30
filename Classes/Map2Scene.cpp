@@ -3,6 +3,7 @@
 #include "Map2Scene.h"
 #include "SimpleAudioEngine.h"
 #include "Enemy.h"
+#include "Tower.h"
 #include"cocos2d.h"
 #include"Carrot.h"
 #include"PauseLayer.h"
@@ -10,6 +11,7 @@
 using namespace std;
 
 USING_NS_CC;
+string money_2 = "900";
 
 Scene* Map2Scene::createScene()
 {
@@ -35,7 +37,7 @@ bool Map2Scene::init()
     auto sprite_0 = Sprite::create("BG1.png");            //地图
     if (sprite_0 == nullptr)
     {
-        problemLoading("'BG1.png'");
+        problemLoading("'BG1.png'");         
     }
     else
     {
@@ -43,25 +45,33 @@ bool Map2Scene::init()
         this->addChild(sprite_0, 0);
     }
 
-    auto sprite = Sprite::create("2.png");            //地图
-    if (sprite == nullptr)
-    {
-        problemLoading("'2.png'");
-    }
-    else
-    {
-        sprite->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
-        this->addChild(sprite, 1);
-    }
-
-    auto sprite_1 = Sprite::create("start01.png");
+    auto sprite_1 = Sprite::create("start01.png");             //怪物入口
     sprite_1->setPosition(Vec2(visibleSize.width / 2 + origin.x + 310, visibleSize.height / 2 + origin.y + 210));
-    this->addChild(sprite_1, 2);
+    this->addChild(sprite_1, 1);
     /*-------------------------------------------------------------------------------------------------------------------------*/
     //...地图map_2.tmx?
+    map = TMXTiledMap::create("map_2.tmx");
+    addChild(map);//初始化地图
+    objectGroup = map->getObjectGroup("bottle");   //获取瓦片地图中的point对象层
+    objs = objectGroup->getObjects();
 
-
-
+    /*for (const auto& obj : objs)    //放置按钮
+    {
+        auto valueMap = obj.asValueMap();
+        auto button = ui::Button::create("select_01.png", "select_01.png");
+        //按钮的位置坐标
+        button->setPosition(Vec2(valueMap["x"].asFloat(), valueMap["y"].asFloat()));
+        button->setVisible(false);
+        button->addTouchEventListener([button](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+            if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+                button->setVisible(true);
+            }
+            });
+        addChild(button);
+    }*/
+    auto Listener = cocos2d::EventListenerTouchOneByOne::create();//初始化监听器
+    Listener->onTouchBegan = CC_CALLBACK_2(Map2Scene::onTouchBegan, this);
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(Listener, this);
 
     /*-------------------------------------------------------------------------------------------------------------------------*/
     
@@ -94,11 +104,49 @@ bool Map2Scene::init()
     /*-------------------------------------------------------------------------------------------------------------------------*/
 
     //  创建关闭按钮
-    auto closeItem = MenuItemImage::create(                 //点击，需修改
-        "CloseNormal.png",
-        "CloseSelected.png",
-        CC_CALLBACK_1(Map2Scene::menuCloseCallback, this));
+    auto sprite_bg = Sprite::create("stagemap_toolbar_rightbg.png");            //返回首页+金币
+    if (sprite_bg == nullptr)
+    {
+        problemLoading("'stagemap_toolbar_rightbg.png'");
+    }
+    else
+    {
+        sprite_bg->setPosition(Vec2(visibleSize.width / 2 + origin.x + 350, visibleSize.height / 2 + origin.y + 251));
+        this->addChild(sprite_bg, 1);
+    }
 
+    auto closeItem = MenuItemImage::create(                       //返回关卡页面
+        "stagemap_toolbar_home.png",
+        "stagemap_toolbar_home.png",
+        CC_CALLBACK_1(Map2Scene::menuCloseCallback, this));
+    if (closeItem == nullptr ||
+        closeItem->getContentSize().width <= 0 ||
+        closeItem->getContentSize().height <= 0)
+    {
+        problemLoading("'stagemap_toolbar_home.png' and 'stagemap_toolbar_home.png'");
+    }
+    else
+    {
+        float x = origin.x + visibleSize.width - closeItem->getContentSize().width / 2;
+        float y = origin.y + closeItem->getContentSize().height / 2;
+        closeItem->setPosition(Vec2(x, y + 548));
+    }
+    auto menu2 = Menu::create(closeItem, NULL);
+    menu2->setPosition(Vec2::ZERO);
+    this->addChild(menu2, 2);
+
+    auto label = Label::createWithTTF("Money:"+money_2, "fonts/Marker Felt.ttf", 24);
+    if (label == nullptr)
+    {
+        problemLoading("'fonts/Marker Felt.ttf'");
+    }
+    else
+    {
+        label->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width / 2 - 100, origin.y + closeItem->getContentSize().height / 2 + 548));
+        this->addChild(label, 4);
+    }
+
+    /*---------------------------------------------------------------------------------------------------------------*/
     //  创建暂停按钮
     auto pauseItem = MenuItemImage::create(
         "pause_0.png",
@@ -111,10 +159,7 @@ bool Map2Scene::init()
         "pause_1.png",
         CC_CALLBACK_1(Map2Scene::onResumeButtonClicked, this));
 
-    if (closeItem == nullptr ||
-        closeItem->getContentSize().width <= 0 ||
-        closeItem->getContentSize().height <= 0 ||
-        pauseItem == nullptr ||
+    if (pauseItem == nullptr ||
         pauseItem->getContentSize().width <= 0 ||
         pauseItem->getContentSize().height <= 0 ||
         resumeItem == nullptr ||
@@ -125,11 +170,6 @@ bool Map2Scene::init()
     }
     else
     {
-        //  设置按钮的位置
-        float xClose = 930;
-        float yClose = 20;
-        closeItem->setPosition(Vec2(xClose, yClose));
-
         float xPause = 880; // 10 是按钮之间的间距
         float yPause = 15;
         pauseItem->setPosition(Vec2(xPause, yPause));
@@ -140,7 +180,7 @@ bool Map2Scene::init()
     }
 
     // 添加按钮到菜单
-    auto menu = Menu::create(closeItem, pauseItem, resumeItem, nullptr);
+    auto menu = Menu::create( pauseItem, resumeItem, nullptr);
     menu->setPosition(Vec2(0, 0));
     this->addChild(menu, 9);
 
@@ -152,15 +192,251 @@ bool Map2Scene::init()
     /*-------------------------------------------------------------------------------------------------------------------------*/
 
 
+    // 注册怪物到达终点的监听器
+    auto eventListener = EventListenerCustom::create("enemy_reached_destination", [&](EventCustom* event) {
+        // 处理怪物到达终点的逻辑
+        Enemy* enemy = static_cast<Enemy*>(event->getUserData());
+        // 在这里实现萝卜被咬的逻辑
+        carrot->biteAnimation();
+        int currentHealth = carrot->getHealth();
+        currentHealth -= 10;
+        carrot->setHealth(currentHealth);
+        carrotHealth -= 10;
+        updateCarrotHealthBar();
+        });
+
+    Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(eventListener, this);
+
+
+
 
     return true;
 }
 
+//触摸建塔
+bool Map2Scene::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
+{
+    if (selecting = true && selection != NULL) {
+        removeChild(selection, true);
+        selection = NULL;
+        selecting = false;
+        return true;
+    }
+    Vec2 touchPos = touch->getLocation();
+    Vec2 mapPos = this->convertToNodeSpace(touchPos);
+
+    if (&objs != NULL) {
+
+        for (const auto& obj : objs) {
+            auto properties = obj.asValueMap();
+            int x = properties["x"].asInt();
+            int y = properties["y"].asInt();
+            int width = properties["width"].asInt();
+            int height = properties["height"].asInt();
+
+            if (mapPos.x >= x && mapPos.x <= x + width && mapPos.y >= y && mapPos.y <= y + height) {
+                selection = Sprite::create("select_01.png");
+                selection->setPosition(Vec2(x + 30, y + 30));
+                addChild(selection, 3);
+                selecting = true;
+
+                towerButton1 = cocos2d::ui::Button::create("Bottle01.png");
+                towerButton1->setPosition(Vec2(35, -35));
+                towerButton2 = cocos2d::ui::Button::create("TBlueStar-hd1.png");
+                towerButton2->setPosition(Vec2(-35, -35));
+                towerButton3 = cocos2d::ui::Button::create("TFireBottle-hd1.png");
+                towerButton3->setPosition(Vec2(105, -35));
+                selection->addChild(towerButton1);
+                selection->addChild(towerButton2);
+                selection->addChild(towerButton3);
+                towerButton1->addClickEventListener([=](cocos2d::Ref* sender) {
+                    /*buttonClickCallBack(sender, Vec2(x, y), bottle);*/
+                    auto ob = find_if(objs.begin(), objs.end(), [=](const Value& cnt) {
+                        auto cntVM = cnt.asValueMap();
+                        return x == cntVM["x"].asInt() && y == cntVM["y"].asInt(); });//游标遍历，在objs中找到当前要放塔的位置
+                    if (ob != objs.end()) {
+                        objs.erase(ob);//从objs中删除放了塔的坐标，这样就不会再放第二次了
+                    }
+                    removeChild(selection, true);//删掉选择方框和按钮
+                    selection = NULL;
+                    selecting = false;
+
+                    Tower* newTower;
+
+                    newTower = BottleTower::create();
+
+                    newTower->PlaceTower(Vec2(x, y));//放塔
+                    std::shared_ptr<Tower> sharedTower = std::make_shared<Tower>(newTower);
+                    newTower->getBottom()->addClickEventListener([this, sharedTower](cocos2d::Ref* sender) {
+                        /*buttonClickCallBack1(sender, pos);*/
+                        selection = Sprite::create("UPGorDLT.png");
+                        selection->setPosition(Vec2(sharedTower->getPosition().x + 20, sharedTower->getPosition().y + 50));
+                        addChild(selection, 3);
+                        selecting = true;
+
+                        dltButton = cocos2d::ui::Button::create("dlt.png");
+                        upgButton = cocos2d::ui::Button::create("upg.png");
+                        dltButton->setPosition(Vec2(165, 10));
+                        upgButton->setPosition(Vec2(165, 330));//位置不对 待修改。
+                        selection->addChild(dltButton);
+                        selection->addChild(upgButton);
+                        dltButton->addClickEventListener([this, sharedTower](cocos2d::Ref* sender) {
+                            /*buttonClickCallBackDLT(sender);*/
+                            sharedTower->getBottom()->removeFromParent();
+                            });
+                        });
+
+                    //test rotation
+                    auto ENEMY = Sprite::create("p11.png");
+                    ENEMY->setPosition(Vec2(x + 20, y + 200));
+                    this->addChild(ENEMY, 3);
+                    newTower->Rotate(ENEMY->getPosition());
+                    auto bullet = Sprite::create("pBottle12.png");
+                    bullet->setPosition(Vec2(mapPos.x + 20, mapPos.y + 50));
+                    this->addChild(bullet, 4);
+                    Vec2 tt = bullet->getPosition();
+                    //射及方向向量                          //怪物坐标
+                    Point shootVector = ENEMY->getPosition() - bullet->getPosition();
+                    // 向量标准化
+                    Point normalizedVector = ccpNormalize(shootVector);
+                    // 移动长度向量
+                    Point overShootVector = normalizedVector * 1000;
+                    // 超出屏幕的点
+                    Point offScreenPoint = bullet->getPosition() + overShootVector;
+                    // 假设速度为500（pix/s）
+                    float moveSpeed = 50;
+                    // 移动时间
+                    float moveDuration = sqrt(shootVector.x * shootVector.x + shootVector.y * shootVector.y) / moveSpeed;
+                    // 执行设计
+                    auto move = MoveTo::create(moveDuration, offScreenPoint);
+                    CallFunc* moveDone = CallFunc::create(CC_CALLBACK_0(Map2Scene::shootFinish, this, bullet));
+                    bullet->runAction(Sequence::create(move, moveDone, NULL));
+
+                    });
+                towerButton2->addClickEventListener([=](cocos2d::Ref* sender) {buttonClickCallBack(sender, Vec2(x, y), ice); });
+                towerButton3->addClickEventListener([=](cocos2d::Ref* sender) {buttonClickCallBack(sender, Vec2(x, y), fire); });
+                /*towerButton1->setTouchEnabled(true);
+                towerButton1->addTouchEventListener([this,x,y](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+                    if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+                        removeChild(selection, true);
+                        selection = NULL;
+                        selecting = false;
+                        auto bottom = Sprite::create("Bottle_3.png");
+                        bottom->setPosition(Vec2(x, y));
+                        addChild(bottom, 3);
+                    }
+                    else{
+                        removeChild(selection, true);
+                        selection = NULL;
+                        selecting = false;
+                    }
+                    });*/
+                    //towerButton1.
+            }
+        }
+    }
+    return true;
+}
+//射击------test
+void Map2Scene::shootFinish(Node* pNode)
+{
+    Sprite* bullet = (Sprite*)pNode;
+    if (bullet != NULL)
+    {
+        bullet->stopAllActions();
+
+    }
+    this->removeChild(bullet, true);
+}
+//建塔
+void Map2Scene::buttonClickCallBack(cocos2d::Ref* sender, const cocos2d::Vec2& pos, const int towerType)
+{
+    auto ob = find_if(objs.begin(), objs.end(), [=](const Value& cnt) {
+        auto cntVM = cnt.asValueMap();
+        return pos.x == cntVM["x"].asInt() && pos.y == cntVM["y"].asInt(); });//游标遍历，在objs中找到当前要放塔的位置
+    if (ob != objs.end()) {
+        objs.erase(ob);//从objs中删除放了塔的坐标，这样就不会再放第二次了
+    }
+    removeChild(selection, true);//删掉选择方框和按钮
+    selection = NULL;
+    selecting = false;
+
+    Tower* newTower;
+    switch (towerType) {
+    case 0:
+        newTower = BottleTower::create();
+        break;
+    case 1:
+        newTower = IceTower::create();
+        break;
+    case 2:
+        newTower = FireTower::create();
+        break;
+    default:
+        break;
+    }
+
+    newTower->PlaceTower(pos);//放塔
+
+    newTower->getBottom()->addClickEventListener([=](cocos2d::Ref* sender) {buttonClickCallBack1(sender, pos); });
+
+    //test rotation
+    auto ENEMY = Sprite::create("p11.png");
+    ENEMY->setPosition(Vec2(pos.x + 20, pos.y + 200));
+    this->addChild(ENEMY, 3);
+    newTower->Rotate(ENEMY->getPosition());
+
+    //test Attack
+    //newTower->Attack(ENEMY);
+}
+//升级和删除
+void Map2Scene::buttonClickCallBack1(cocos2d::Ref* sender, const cocos2d::Vec2& pos)
+{
+    /*/auto tw = find_if(tws.begin(), tws.end(), [=](const Value& cnt) {
+        auto cntVM = cnt.asValueMap();
+        return pos.x == cntVM["x"].asInt() && pos.y == cntVM["y"].asInt(); });//游标遍历，在objs中找到当前要放塔的位置
+    if (choice == 0) {
+        if (tw != tws.end()) {
+            objs.push_back(*tw);
+            tws.erase(tw);//从objs中删除放了塔的坐标，这样就不会再放第二次了
+        }
+        auto tgtTW = existedTW.begin();
+        for (; tgtTW != existedTW.end(); tgtTW++) {
+            if ((*tgtTW)->getPosition() == pos)
+                break;
+        }
+        Director::getInstance()->getRunningScene()->removeChild((*tgtTW)->getBottom());
+        existedTW.erase(tgtTW);
+    }
+    removeChild(selection, true);//删掉选择方框和按钮
+    selection = NULL;
+    selecting = false;*/
+
+    selection = Sprite::create("UPGorDLT.png");
+    selection->setPosition(Vec2(pos.x + 20, pos.y + 50));
+    addChild(selection, 3);
+    selecting = true;
+
+    dltButton = cocos2d::ui::Button::create("dlt.png");
+    upgButton = cocos2d::ui::Button::create("upg.png");
+    dltButton->setPosition(Vec2(20, -55));
+    upgButton->setPosition(Vec2(20, 95));//位置不对 待修改。
+    selection->addChild(dltButton);
+    selection->addChild(upgButton);
+    dltButton->addClickEventListener([=](cocos2d::Ref* sender) {buttonClickCallBackDLT(sender); });
+
+}
+//删除
+void Map2Scene::buttonClickCallBackDLT(cocos2d::Ref* sender)
+{
+    selection->removeFromParent();
+}
+//返回关卡选择界面
 void Map2Scene::menuCloseCallback(Ref* pSender)
 {
     Director::getInstance()->popScene();
 }
-
+/*--------------------------------------------怪物和萝卜、游戏进程方面---------------------------------------------------------------------*/
 void Map2Scene::spawnMonsters(float dt)
 {
     // 逐个创建怪物，并添加到场景中
@@ -341,4 +617,4 @@ void Map2Scene::onGameFailed()
     Director::getInstance()->replaceScene(gameOverScene);
 }
 
-
+/*--------------------------------------------怪物和萝卜、游戏进程方面---------------------------------------------------------------------*/
