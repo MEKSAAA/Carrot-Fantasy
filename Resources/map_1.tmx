@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="15" height="9" tilewidth="70" tileheight="70" infinite="0" nextlayerid="6" nextobjectid="70">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="15" height="9" tilewidth="70" tileheight="70" infinite="0" nextlayerid="6" nextobjectid="36">
  <tileset firstgid="1" name="BG1" tilewidth="70" tileheight="70" tilecount="144" columns="16">
   <image source="BG1.png" width="1136" height="640"/>
  </tileset>
@@ -22,6 +22,24 @@
 129,130,131,132,133,134,135,136,137,138,139,140,141,142,143
 </data>
  </layer>
+ <objectgroup id="4" name="carrot">
+  <object id="16" x="925" y="173"/>
+  <object id="17" x="923" y="176"/>
+  <object id="18" x="923" y="171"/>
+  <object id="19" x="931" y="148"/>
+  <object id="20" x="912" y="134"/>
+  <object id="21" x="883" y="127"/>
+  <object id="22" x="935" y="166"/>
+  <object id="23" x="935" y="198"/>
+  <object id="24" x="936" y="147"/>
+  <object id="25" x="927" y="162" width="1" height="1"/>
+  <object id="26" x="926" y="157"/>
+  <object id="27" x="926" y="157"/>
+  <object id="28" x="928" y="154"/>
+  <object id="29" x="925" y="175">
+   <point/>
+  </object>
+ </objectgroup>
  <layer id="2" name="bg2" width="15" height="9">
   <data encoding="csv">
 0,236,237,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -35,7 +53,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="3" name="money" visible="0">
+ <objectgroup id="3" name="money">
   <object id="1" x="632" y="142"/>
   <object id="2" x="241" y="102"/>
   <object id="3" x="379" y="100"/>
@@ -56,26 +74,5 @@
   <object id="30" x="350" y="280" width="70" height="70"/>
   <object id="31" x="420" y="350" width="70" height="70"/>
   <object id="35" x="490" y="350" width="70" height="70"/>
-  <object id="43" x="210" y="210" width="70" height="70"/>
-  <object id="44" x="210" y="280" width="70" height="70"/>
-  <object id="45" x="210" y="420" width="70" height="70"/>
-  <object id="46" x="210" y="490" width="70" height="70"/>
-  <object id="47" x="280" y="490" width="70" height="70"/>
-  <object id="48" x="280" y="70" width="70" height="70"/>
-  <object id="51" x="350" y="140" width="70" height="70"/>
-  <object id="52" x="420" y="280" width="70" height="70"/>
-  <object id="53" x="490" y="490" width="70" height="70"/>
-  <object id="54" x="630" y="490" width="70" height="70"/>
-  <object id="55" x="700" y="490" width="70" height="70"/>
-  <object id="56" x="770" y="420" width="70" height="70"/>
-  <object id="57" x="770" y="490" width="70" height="70"/>
-  <object id="62" x="770" y="280" width="70" height="70"/>
-  <object id="63" x="770" y="210" width="70" height="70"/>
-  <object id="64" x="630" y="280" width="70" height="70"/>
-  <object id="65" x="630" y="210" width="70" height="70"/>
-  <object id="66" x="700" y="70" width="70" height="70"/>
-  <object id="67" x="770" y="70" width="70" height="70"/>
-  <object id="68" x="840" y="70" width="70" height="70"/>
-  <object id="69" x="560" y="280" width="70" height="70"/>
  </objectgroup>
 </map>
