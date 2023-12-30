@@ -1,9 +1,7 @@
-//Map1Scene.cpp
-
 #include "CarrotFirstScene.h"
 #include "SecondScene.h"
 #include "Map1Scene.h"
-#include "TowerScene.h"
+#include "Tower.h"
 #include "SimpleAudioEngine.h"
 #include "Enemy.h"
 #include"cocos2d.h"
@@ -34,7 +32,7 @@ bool Map1Scene::init()
     /*-------------------------------------------------------------------------------------------------------------------------*/
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
-    
+
     auto sprite_0 = Sprite::create("BG1.png");            //地图
     if (sprite_0 == nullptr)
     {
@@ -62,21 +60,41 @@ bool Map1Scene::init()
     this->addChild(sprite_1, 2);
     /*-------------------------------------------------------------------------------------------------------------------------*/
 
-    auto map = TMXTiledMap::create("map_1.tmx");    //初始化地图
-    addChild(map);
-    auto Listener = EventListenerTouchOneByOne::create();//初始化监听器
+    map = TMXTiledMap::create("map_1.tmx");
+    addChild(map);//初始化地图
+    objectGroup = map->getObjectGroup("bottle");   //获取瓦片地图中的point对象层
+    objs = objectGroup->getObjects();
+
+    /*for (const auto& obj : objs)    //放置按钮
+    {
+        auto valueMap = obj.asValueMap();
+        auto button = ui::Button::create("select_01.png", "select_01.png");
+        //按钮的位置坐标
+        button->setPosition(Vec2(valueMap["x"].asFloat(), valueMap["y"].asFloat()));
+        button->setVisible(false);
+        button->addTouchEventListener([button](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+            if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+                button->setVisible(true);
+            }
+            });
+        addChild(button);
+    }*/
+    auto Listener = cocos2d::EventListenerTouchOneByOne::create();//初始化监听器
     Listener->onTouchBegan = CC_CALLBACK_2(Map1Scene::onTouchBegan, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(Listener, this);
 
-    /*-------------------------------------------------------------------------------------------------------------------------*/
     
+
+
+    /*-------------------------------------------------------------------------------------------------------------------------*/
+
     //  初始化暂停层
     pauseLayer = nullptr;
 
     /*-------------------------------------------------------------------------------------------------------------------------*/
     //  初始化萝卜
     carrot = Carrot::create();
-    carrot->setPosition(Vec2(860,520));
+    carrot->setPosition(Vec2(860, 520));
     carrotHealth = 100;
     carrot->setHealth(100);
     createCarrot();
@@ -152,7 +170,7 @@ bool Map1Scene::init()
     scheduleOnce(CC_SCHEDULE_SELECTOR(Map1Scene::spawnMonsters), 1.0f);
 
     /*-------------------------------------------------------------------------------------------------------------------------*/
-    
+
 
 
     // 注册怪物到达终点的监听器
@@ -166,28 +184,231 @@ bool Map1Scene::init()
         carrot->setHealth(currentHealth);
         carrotHealth -= 10;
         updateCarrotHealthBar();
-    });
+        });
 
     Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(eventListener, this);
 
-    
-    
+
     return true;
 }
 
-void Map1Scene::createTower(const Vec2& position)
+bool Map1Scene::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
 {
-    auto tower = TowerScene::create();
-    tower->setPosition(position);
-
-    addChild(tower,3);
-}
-
-bool Map1Scene::onTouchBegan(Touch* touch, Event* event)
-{
+    if (selecting = true && selection != NULL) {
+        removeChild(selection, true);
+        selection = NULL;
+        selecting = false;
+        return true;
+    }
     Vec2 touchPos = touch->getLocation();
-    createTower(touchPos);
+    Vec2 mapPos = this->convertToNodeSpace(touchPos);
+
+    if (&objs != NULL) {
+
+        for (const auto& obj : objs) {
+            auto properties = obj.asValueMap();
+            int x = properties["x"].asInt();
+            int y = properties["y"].asInt();
+            int width = properties["width"].asInt();
+            int height = properties["height"].asInt();
+
+            if (mapPos.x >= x && mapPos.x <= x + width && mapPos.y >= y && mapPos.y <= y + height) {
+                selection = Sprite::create("select_01.png");
+                selection->setPosition(Vec2(x+20, y+50));
+                addChild(selection,3);
+                selecting = true;
+
+                towerButton1 = cocos2d::ui::Button::create("Bottle01.png");
+                towerButton1->setPosition(Vec2(35, -35));
+                towerButton2 = cocos2d::ui::Button::create("TBlueStar-hd1.png");
+                towerButton2->setPosition(Vec2(-35, -35));
+                towerButton3 = cocos2d::ui::Button::create("TFireBottle-hd1.png");
+                towerButton3->setPosition(Vec2(105, -35));
+                selection->addChild(towerButton1);
+                selection->addChild(towerButton2);
+                selection->addChild(towerButton3);
+                towerButton1->addClickEventListener([=](cocos2d::Ref* sender) {
+                    /*buttonClickCallBack(sender, Vec2(x, y), bottle);*/
+                    auto ob = find_if(objs.begin(), objs.end(), [=](const Value& cnt) {
+                        auto cntVM = cnt.asValueMap();
+                        return x == cntVM["x"].asInt() && y == cntVM["y"].asInt(); });//游标遍历，在objs中找到当前要放塔的位置
+                    if (ob != objs.end()) {
+                        objs.erase(ob);//从objs中删除放了塔的坐标，这样就不会再放第二次了
+                    }
+                    removeChild(selection, true);//删掉选择方框和按钮
+                    selection = NULL;
+                    selecting = false;
+
+                    Tower* newTower;
+                    
+                    newTower = BottleTower::create();
+
+                    newTower->PlaceTower(Vec2(x,y));//放塔
+                    std::shared_ptr<Tower> sharedTower = std::make_shared<Tower>(newTower);
+                    newTower->getBottom()->addClickEventListener([this, sharedTower](cocos2d::Ref* sender) {
+                        /*buttonClickCallBack1(sender, pos);*/
+                        selection = Sprite::create("UPGorDLT.png");
+                        selection->setPosition(Vec2(sharedTower->getPosition().x+20, sharedTower->getPosition().y+50));
+                        addChild(selection, 3);
+                        selecting = true;
+
+                        dltButton = cocos2d::ui::Button::create("dlt.png");
+                        upgButton = cocos2d::ui::Button::create("upg.png");
+                        dltButton->setPosition(Vec2(20, -55));
+                        upgButton->setPosition(Vec2(20, 95));//位置不对 待修改。
+                        selection->addChild(dltButton);
+                        selection->addChild(upgButton);
+                        dltButton->addClickEventListener([this, sharedTower](cocos2d::Ref* sender) {
+                            /*buttonClickCallBackDLT(sender);*/
+                            sharedTower->getBottom()->removeFromParent();
+                            });
+                        });
+
+                    //test rotation
+                    //auto ENEMY = Sprite::create("p11.png");
+                    //ENEMY->setPosition(Vec2(x + 20, y + 200));
+                    //this->addChild(ENEMY, 3);
+                    //newTower->Rotate(ENEMY->getPosition());
+                    });
+                towerButton2->addClickEventListener([=](cocos2d::Ref* sender) {buttonClickCallBack(sender, Vec2(x, y), ice); });
+                towerButton3->addClickEventListener([=](cocos2d::Ref* sender) {buttonClickCallBack(sender, Vec2(x, y), fire); });
+                /*towerButton1->setTouchEnabled(true);
+                towerButton1->addTouchEventListener([this,x,y](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+                    if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+                        removeChild(selection, true);
+                        selection = NULL;
+                        selecting = false;
+                        auto bottom = Sprite::create("Bottle_3.png");
+                        bottom->setPosition(Vec2(x, y));
+                        addChild(bottom, 3);
+                    }
+                    else{
+                        removeChild(selection, true);
+                        selection = NULL;
+                        selecting = false;
+                    }
+                    });*/
+                //towerButton1.
+            }
+        }
+    }
+
+    /*if (&tws != NULL) {
+
+        for (const auto& tw : tws) {
+            auto properties = tw.asValueMap();
+            int x = properties["x"].asInt();
+            int y = properties["y"].asInt();
+            int width = properties["width"].asInt();
+            int height = properties["height"].asInt();
+
+            if (mapPos.x >= x && mapPos.x <= x + width && mapPos.y >= y && mapPos.y <= y + height) {
+                selection = Sprite::create("UPGorDLT.png");
+                selection->setPosition(Vec2(x + 20, y + 50));
+                addChild(selection, 3);
+                selecting = true;
+
+                dltButton = cocos2d::ui::Button::create("dlt.png");
+                upgButton = cocos2d::ui::Button::create("upg.png");
+                dltButton->setPosition(Vec2(0, -55));
+                upgButton->setPosition(Vec2(0, 95));
+                selection->addChild(dltButton);
+                selection->addChild(upgButton);
+                dltButton->addClickEventListener([=](cocos2d::Ref* sender) {buttonClickCallBack1(sender, Vec2(x, y), 0); });
+                //upgButton->addClickEventListener([=](cocos2d::Ref* sender) {buttonClickCallBack(sender, Vec2(x, y)); });
+            }
+        }
+    }*/
+   
     return true;
+}
+
+void Map1Scene::buttonClickCallBack(cocos2d::Ref* sender, const cocos2d::Vec2& pos, const int towerType)
+{
+    auto ob = find_if(objs.begin(), objs.end(), [=](const Value& cnt) {
+        auto cntVM = cnt.asValueMap();
+        return pos.x ==cntVM["x"].asInt() && pos.y == cntVM["y"].asInt(); });//游标遍历，在objs中找到当前要放塔的位置
+    if (ob != objs.end()) {
+        objs.erase(ob);//从objs中删除放了塔的坐标，这样就不会再放第二次了
+    }
+    removeChild(selection, true);//删掉选择方框和按钮
+    selection = NULL;
+    selecting = false;
+
+    Tower* newTower;
+    switch (towerType) {
+        case 0:
+            newTower = BottleTower::create();
+            break;
+        case 1:
+            newTower = IceTower::create();
+            break;
+        case 2:
+            newTower = FireTower::create();
+            break;
+        default:
+            break;
+    }
+    
+    newTower->PlaceTower(pos);//放塔
+
+    newTower->getBottom()->addClickEventListener([=](cocos2d::Ref* sender) {buttonClickCallBack1(sender, pos); });
+
+    //test rotation
+    auto ENEMY = Sprite::create("p11.png");
+    ENEMY->setPosition(Vec2(pos.x + 20, pos.y + 200));
+    this->addChild(ENEMY, 3);
+    newTower->Rotate(ENEMY->getPosition());
+
+    //test Attack
+    //newTower->Attack(ENEMY);
+}
+
+void Map1Scene::buttonClickCallBack1(cocos2d::Ref* sender, const cocos2d::Vec2& pos)
+{
+    /*/auto tw = find_if(tws.begin(), tws.end(), [=](const Value& cnt) {
+        auto cntVM = cnt.asValueMap();
+        return pos.x == cntVM["x"].asInt() && pos.y == cntVM["y"].asInt(); });//游标遍历，在objs中找到当前要放塔的位置
+    if (choice == 0) {
+        if (tw != tws.end()) {
+            objs.push_back(*tw);
+            tws.erase(tw);//从objs中删除放了塔的坐标，这样就不会再放第二次了
+        }
+        auto tgtTW = existedTW.begin();
+        for (; tgtTW != existedTW.end(); tgtTW++) {
+            if ((*tgtTW)->getPosition() == pos)
+                break;
+        }
+        Director::getInstance()->getRunningScene()->removeChild((*tgtTW)->getBottom());
+        existedTW.erase(tgtTW);
+    }
+    removeChild(selection, true);//删掉选择方框和按钮
+    selection = NULL;
+    selecting = false;*/
+
+    selection = Sprite::create("UPGorDLT.png");
+    selection->setPosition(Vec2(pos.x + 20, pos.y + 50));
+    addChild(selection, 3);
+    selecting = true;
+
+    dltButton = cocos2d::ui::Button::create("dlt.png");
+    upgButton = cocos2d::ui::Button::create("upg.png");
+    dltButton->setPosition(Vec2(20, -55));
+    upgButton->setPosition(Vec2(20, 95));//位置不对 待修改。
+    selection->addChild(dltButton);
+    selection->addChild(upgButton);
+    dltButton->addClickEventListener([=](cocos2d::Ref* sender) {buttonClickCallBackDLT(sender); });
+    
+}
+
+void Map1Scene::buttonClickCallBackDLT(cocos2d::Ref* sender)
+{
+    selection->removeFromParent();
+}
+
+void Map1Scene::menuCloseCallback(Ref* pSender)
+{
+    Director::getInstance()->popScene();
 }
 
 void Map1Scene::spawnMonsters(float dt)
@@ -275,12 +496,12 @@ void Map1Scene::createMonster(EnemyType type, const Vec2& position, float delay)
         }
 
         // 设置其他怪物属性...
-        addChild(monster,3);  
+        addChild(monster, 3);
 
         monster->move(); // 启动怪物的移动
         CCLOG("Monster created successfully!");  // 添加这一行日志
 
-    });
+        });
 
     // 创建一个序列动作，包含延迟，创建怪物
     auto sequenceAction = Sequence::create(delayAction, createMonsterAction, nullptr);
@@ -367,10 +588,5 @@ void Map1Scene::onGameFailed()
     // 切换到游戏失败场景
     auto gameOverScene = GameOverScene::create();
     Director::getInstance()->replaceScene(gameOverScene);
-}
-
-void Map1Scene::menuCloseCallback(Ref* pSender)
-{
-    Director::getInstance()->popScene();
 }
 

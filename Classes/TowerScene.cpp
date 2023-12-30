@@ -1,4 +1,4 @@
-#include "TowerScene.h"
+/*#include "TowerScene.h"
 #include "CarrotFirstScene.h"
 #include "SecondScene.h"
 #include "SimpleAudioEngine.h"
@@ -11,7 +11,7 @@ USING_NS_CC;
     return TowerScene::create();
 }*/
 
-static void problemLoading(const char* filename)
+/*static void problemLoading(const char* filename)
 {
     printf("Error while loading: %s\n", filename);
     printf("Depending on how you compiled you might have to add 'Resources/' in front of filenames in HelloWorldScene.cpp\n");
@@ -39,11 +39,11 @@ bool TowerScene::init()
         this->addChild(sprite_0, 0);
     }*/
     /*----------------------------------------------------------ÅÚËþ--------------------------------------------------------*/
-     level = 1;
-    initWithFile("select_01.png");
-    auto listener = cocos2d::EventListenerTouchOneByOne::create();       //´¥ÃþÊÂ¼þ
-    listener->onTouchBegan = CC_CALLBACK_2(TowerScene::onTouchBegan, this);
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+     //level = 1;
+    //initWithFile("select_01.png");
+    //auto listener = cocos2d::EventListenerTouchOneByOne::create();       //´¥ÃþÊÂ¼þ
+    //listener->onTouchBegan = CC_CALLBACK_2(TowerScene::onTouchBegan, this);
+   // _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
     /*----------------------------------------------------------ÅÚËþ--------------------------------------------------------*/
 
     /*auto closeItem = MenuItemImage::create(
@@ -68,19 +68,19 @@ bool TowerScene::init()
     menu->setPosition(Vec2::ZERO);
     this->addChild(menu, 1);*/
 
-    return true;
-}
+    //return true;
+//}
 /*----------------------------------------------------------ÅÚËþ--------------------------------------------------------*/
-bool TowerScene::onTouchBegan(Touch* touch, Event* event)
+/*bool TowerScene::onTouchBegan(Touch* touch, Event* event)
 {
     auto tower = TowerScene::create();
     tower->setPosition(touch->getLocation());
     getParent()->addChild(tower,3);
     return true;
-}
+}*/
 /*----------------------------------------------------------ÅÚËþ--------------------------------------------------------*/
 
-void TowerScene::menuCloseCallback(Ref* pSender)
+/*void TowerScene::menuCloseCallback(Ref* pSender)
 {
     Director::getInstance()->popScene();
-}
+}*/

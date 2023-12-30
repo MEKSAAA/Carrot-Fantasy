@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 #ifndef __TOWER_SCENE_H__
 #define __TOWER_SCENE_H__
 
@@ -17,4 +17,4 @@ public:
     CREATE_FUNC(TowerScene);
 };
 
-#endif // __TOWER_SCENE_H__
+#endif // __TOWER_SCENE_H__*/
