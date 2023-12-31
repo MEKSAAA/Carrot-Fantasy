@@ -1,4 +1,3 @@
-//#include"Sound.h"
 #include"SimpleAudioEngine.h"
 using namespace CocosDenshion;
 
