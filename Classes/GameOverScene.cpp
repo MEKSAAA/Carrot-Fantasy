@@ -34,6 +34,21 @@ bool GameOverScene::init() {
     menu->setPosition(Vec2::ZERO);
     this->addChild(menu, 1);
 
+    // 初始化星星和位置
+    star1 = Sprite::create("starno.png");
+    star2 = Sprite::create("starno.png");
+    star3 = Sprite::create("starno.png");
+
+    starPosition = Vec2(visibleSize.width / 2 + origin.x - 70, visibleSize.height / 2 + origin.y + 140);
+
+    star1->setPosition(starPosition);
+    star2->setPosition(starPosition + Vec2(70, 0));
+    star3->setPosition(starPosition + Vec2(140, 0));
+
+    this->addChild(star1, 2);
+    this->addChild(star2, 2);
+    this->addChild(star3, 2);
+
     return true;
 }
 

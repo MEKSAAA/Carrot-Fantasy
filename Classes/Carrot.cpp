@@ -20,7 +20,7 @@ bool Carrot::init()
 	}
 	//设置初始位置
 	//setPosition(Vec2(820, 460));
-/*-------------------------------------------------------------萝卜初始动画-------------------------------------------------------------*/
+
 	Vector<SpriteFrame*>allFrame;
 	for (int i = 0; i < 3; i++)
 	{
@@ -29,13 +29,18 @@ bool Carrot::init()
 		allFrame.pushBack(sf);
 	}
 	Animation* animation = Animation::createWithSpriteFrames(allFrame);
-	animation->setDelayPerUnit(0.3);
+	animation->setDelayPerUnit(0.1);
 	Animate* animate = Animate::create(animation);
 	spcarrot = Sprite::create();
 	spcarrot->runAction(RepeatForever::create(animate));
 	this->addChild(spcarrot, 2);
 	spcarrot->setPosition(customPosition);
-	/*-------------------------------------------------------------萝卜初始动画-------------------------------------------------------------*/
+	//this->schedule(schedule_selector(Map1Scene::))
+
+	//触摸监听器，模拟被咬
+	//auto Listener = cocos2d::EventListenerTouchOneByOne::create();
+	//Listener->onTouchBegan = CC_CALLBACK_2(Carrot::onTouchBegan, this);
+	//_eventDispatcher->addEventListenerWithSceneGraphPriority(Listener, this);
 
 	return true;
 }
@@ -43,12 +48,13 @@ bool Carrot::init()
 void Carrot::biteAnimation()
 {
 	//if(spcarrot)
-	    this->removeChild(spcarrot, false);
+	this->removeChild(spcarrot, false);
 
+	//string carrot = "hlb1_" + to_string(9 - num) + ".png";
 	Vector<SpriteFrame*>allFrame;
 	for (int i = 0; i < 2; i++)
 	{
-		string name = "hlb1_" + to_string(10-num-i) + ".png";
+		string name = "hlb1_" + to_string(10 - num - i) + ".png";
 		SpriteFrame* sf = SpriteFrame::create(name, Rect(0, 0, 200, 140));
 		allFrame.pushBack(sf);
 	}
@@ -56,29 +62,45 @@ void Carrot::biteAnimation()
 	animation->setDelayPerUnit(0.1);
 	Animate* animate = Animate::create(animation);
 	spcarrot = Sprite::create();
-	spcarrot->runAction(Repeat::create(animate,1));
+	spcarrot->runAction(Repeat::create(animate, 1));
 	this->addChild(spcarrot, 2);
 	spcarrot->setPosition(customPosition);
 	num++;
+	/*auto hlb = Sprite::create(carrot);
+	auto scaleDown = cocos2d::ScaleTo::create(0.1f, 0.8f);
+	auto scaleUp = cocos2d::ScaleTo::create(0.1f, 1.0f);
+	auto sequence = cocos2d::Sequence::create(scaleDown, scaleUp, nullptr);
+	runAction(sequence);
+	if (hlb == nullptr)
+	{
+		problemLoading("carrot");
+	}
+	else
+	{
+		hlb->setPosition(Vec2(820,460));
+		this->addChild(hlb, 2);
+	}
+	num++;*/
+
 }
 
-//模拟被咬---------------touch_test
+//模拟被咬
 bool Carrot::onTouchBegan(cocos2d::Touch* touch,cocos2d::Event* event)
 {
 	biteAnimation();
 	return true;
 }
-//设置生命值
+
 void Carrot::setHealth(int health)
 {
 	health_ = health;
 }
-//得到生命值
-int Carrot::getHealth()
+
+int Carrot::getHealth ()const
 {
 	return health_;
 }
-//萝卜位置
+
 void Carrot::setPosition(const cocos2d::Vec2& position)
 {
 	customPosition = position;
@@ -88,5 +110,32 @@ void Carrot::setPosition(const cocos2d::Vec2& position)
 	{
 		spcarrot->setPosition(customPosition);
 	}
+}
+
+void Carrot::increaseHealth(int value)
+{
+	// 增加生命值但不超过上限
+	health_ += value;
+	health_ = std::min(health_, 100);
+}
+
+void Carrot::updateCarrotAnimation()
+{
+	this->removeChild(spcarrot, false);
+	num--;
+	Vector<SpriteFrame*>allFrame;
+	for (int i = 0; i < 2; i++)
+	{
+		string name = "hlb1_" + to_string(10 - num - i) + ".png";
+		SpriteFrame* sf = SpriteFrame::create(name, Rect(0, 0, 200, 140));
+		allFrame.pushBack(sf);
+	}
+	Animation* animation = Animation::createWithSpriteFrames(allFrame);
+	animation->setDelayPerUnit(0.1);
+	Animate* animate = Animate::create(animation);
+	spcarrot = Sprite::create();
+	spcarrot->runAction(Repeat::create(animate, 1));
+	this->addChild(spcarrot, 2);
+	spcarrot->setPosition(customPosition);
 }
 

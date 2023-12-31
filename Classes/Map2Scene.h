@@ -15,10 +15,13 @@ class Map2Scene : public cocos2d::Scene
 {
 public:
     static cocos2d::Scene* createScene();
-    virtual bool init();
     void shootFinish(Node* pNode);  //射击
-    void menuCloseCallback(cocos2d::Ref* pSender);
     bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
+
+    virtual bool init();
+    void menuCloseCallback(cocos2d::Ref* pSender);
+    void onEnter();
+    void resetCarrot();
 
     CREATE_FUNC(Map2Scene);
 
@@ -51,8 +54,20 @@ public:
     //  游戏失败事件处理函数
     void onGameFailed();
 
+    //  处理升级萝卜点击事件
+    void onAddHealthButtonClicked(cocos2d::Ref* sender);
+
+    //  更新按钮的状态（是否可用）
+    void updateAddHealthButtonState();
+
+    //  更新按钮图片
+    void updateAddHealthButtonImage();
+
 private:
     PauseLayer* pauseLayer;
+    Label* carrotHealthLabel;
+    MenuItemImage* addHealthButton;
+    int addHealthButtonCount;//  用于追踪升级按钮使用次数
 
     cocos2d::TMXTiledMap* map;
     cocos2d::TMXObjectGroup* objectGroup;

@@ -1,42 +1,39 @@
-//#pragma once
-//#pragma once
-//#pragma once
+//Map1Scene.h
+#pragma once
 #ifndef __Map1_Scene_H__
 #define __Map1_Scene_H__
 
 #include "cocos2d.h"
 #include"ui/CocosGUI.h"
-#include "Tower.h"
-#include<string.h>
-#include<vector>
 #include"Carrot.h"
+#include<string.h>
 #include<Enemy.h>
 #include"PauseLayer.h"
+#include "Tower.h"
 
 class Carrot;
-
-
-extern class Tower;
 
 class Map1Scene : public cocos2d::Scene
 {
 public:
     static cocos2d::Scene* createScene();
-
-    virtual bool init();
     void shootFinish(Node* pNode);  //射击
-    void menuCloseCallback(cocos2d::Ref* pSender);
     bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
 
-    CREATE_FUNC(Map1Scene);
+    virtual bool init();
+    void Map1Scene::createTower(const cocos2d::Vec2& position);
+    void menuCloseCallback(cocos2d::Ref* pSender);
+    void onEnter();
+    void resetCarrot();
 
+    CREATE_FUNC(Map1Scene);
 
     void spawnMonsters(float dt);    // 生成第一种敌人
     void spawnSecondTypeMonsters(float dt);  //  生成第二种敌人
     void spawnThirdTypeMonsters(float dt);  //  生成第三种敌人
     void createMonster(EnemyType type, const Vec2& position, float delay);
 
-    Carrot* carrot;
+    Carrot *carrot;
     int carrotHealth;//  萝卜的生命值
     cocos2d::Sprite* carrotHealthBarBackground;
     cocos2d::ProgressTimer* carrotHealthBarForeground;
@@ -60,9 +57,20 @@ public:
     //  游戏失败事件处理函数
     void onGameFailed();
 
+    //  处理升级萝卜点击事件
+    void onAddHealthButtonClicked(cocos2d::Ref* sender);
+
+    //  更新按钮的状态（是否可用）
+    void updateAddHealthButtonState();
+
+    //  更新按钮图片
+    void updateAddHealthButtonImage();
 
 private:
     PauseLayer* pauseLayer;
+    Label* carrotHealthLabel;
+    MenuItemImage* addHealthButton;
+    int addHealthButtonCount;//  用于追踪升级按钮使用次数
 
     cocos2d::TMXTiledMap* map;
     cocos2d::TMXObjectGroup* objectGroup;
@@ -86,6 +94,7 @@ private:
     //升级和删除
     cocos2d::ui::Button* dltButton;
     cocos2d::ui::Button* upgButton;
+
 };
 
 #endif // __HELLOWORLD_SCENE_H__

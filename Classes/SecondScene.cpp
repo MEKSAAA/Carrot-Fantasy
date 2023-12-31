@@ -34,7 +34,6 @@ bool SecondScene::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    //关卡选择
     auto bbutton = ui::Button::create("point.png","point.png","");
     /*------------------------------------------------------关卡选择------------------------------------------------------*/
     //背景滚动

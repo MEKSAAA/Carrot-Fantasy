@@ -21,9 +21,17 @@ public:
     void menuCloseCallback(cocos2d::Ref* pSender);
 
     void setHealth(int health);
-    int getHealth();
+    int getHealth ()const;
 
     void setPosition(const cocos2d::Vec2& position);
+
+    void increaseHealth(int value);
+
+    // 获取萝卜的动画精灵
+    Sprite* getCarrotSprite() const { return spcarrot; }
+
+    // 更新萝卜的动画
+    void updateCarrotAnimation();
 
     CREATE_FUNC(Carrot);
 private:
