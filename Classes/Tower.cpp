@@ -13,8 +13,18 @@ bool Tower::init()
     {
         return false;
     }
-    lv = 1;  //等级
+    lv = 1;  //初始等级
+
+    shootInterval = 1.0f;
+    damage = 25.0f;
+
+    // 每隔一段时间发射子弹
+    schedule([this](float dt) {
+        //this->shoot();
+        }, shootInterval, "shoot_schedule_key");
     return true;
+
+
 }
 //放置炮塔
 void Tower::PlaceTower(const Vec2& pos)
@@ -68,7 +78,7 @@ void Tower::Rotate(const Vec2& enePos)
 
 /*----------------------------------------------------待实现----------------------------------------*/
 //射击函数-----暂未实现
-void Tower::Attack(Sprite* t)
+/*void Tower::Attack(Sprite* t)
 {
     target = t;
     auto bullet = Sprite::create("PBottle11.png");

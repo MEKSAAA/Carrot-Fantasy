@@ -1,7 +1,9 @@
 //Enemy.cpp
 
 #include "Enemy.h"
-
+#include"Tower.h"
+#include"Map1Scene.h"
+#include"Map2Scene.h"
 USING_NS_CC;
 
 Enemy::Enemy()

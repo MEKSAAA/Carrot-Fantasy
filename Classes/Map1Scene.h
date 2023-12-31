@@ -1,39 +1,40 @@
-//Map1Scene.h
-#pragma once
 #ifndef __Map1_Scene_H__
 #define __Map1_Scene_H__
 
 #include "cocos2d.h"
 #include"ui/CocosGUI.h"
-#include"Carrot.h"
+#include "Tower.h"
 #include<string.h>
+#include<vector>
+#include"Carrot.h"
 #include<Enemy.h>
 #include"PauseLayer.h"
-#include "Tower.h"
-
 class Carrot;
+
+extern class Tower;
 
 class Map1Scene : public cocos2d::Scene
 {
 public:
     static cocos2d::Scene* createScene();
-    void shootFinish(Node* pNode);  //射击
-    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
-
+    //void Map1Scene::update(float dt);
     virtual bool init();
-    void Map1Scene::createTower(const cocos2d::Vec2& position);
+    void shootBullet(std::shared_ptr<Tower> tower);
+    void shootFinish(Node* pNode);  //射击
     void menuCloseCallback(cocos2d::Ref* pSender);
+    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
     void onEnter();
     void resetCarrot();
 
     CREATE_FUNC(Map1Scene);
+
 
     void spawnMonsters(float dt);    // 生成第一种敌人
     void spawnSecondTypeMonsters(float dt);  //  生成第二种敌人
     void spawnThirdTypeMonsters(float dt);  //  生成第三种敌人
     void createMonster(EnemyType type, const Vec2& position, float delay);
 
-    Carrot *carrot;
+    Carrot* carrot;
     int carrotHealth;//  萝卜的生命值
     cocos2d::Sprite* carrotHealthBarBackground;
     cocos2d::ProgressTimer* carrotHealthBarForeground;
@@ -63,8 +64,12 @@ public:
     //  更新按钮的状态（是否可用）
     void updateAddHealthButtonState();
 
-    //  更新按钮图片
+    //  萝卜升级更新按钮图片
     void updateAddHealthButtonImage();
+
+
+    std::vector< std::shared_ptr<Tower> > mTowerList;
+    std::vector<Enemy*> mEnemyList;
 
 private:
     PauseLayer* pauseLayer;
@@ -75,14 +80,8 @@ private:
     cocos2d::TMXTiledMap* map;
     cocos2d::TMXObjectGroup* objectGroup;
     cocos2d::ValueVector objs;//存放可以建塔的空地
-    //cocos2d::ValueVector tws;//存放已经建了塔的地方
-    //std::vector<Tower*> existedTW;
-    //对于触摸建塔、塔的升级、删除等操作
-    void createTowerButton(const cocos2d::Vec2& position);
-    void buttonClickCallBack(cocos2d::Ref* sender, const cocos2d::Vec2& pos, const int towerType);
-    void buttonClickCallBack1(cocos2d::Ref* sender, const cocos2d::Vec2& pos);
-    void buttonClickCallBackDLT(cocos2d::Ref* sender);
-    void buttonClickCallBackUPG(cocos2d::Ref* sender, cocos2d::Sprite* upgBottle);
+
+
     //对于触摸建塔、塔的升级、删除等操作
 
     bool selecting = false;//当前是否正在选择状态
@@ -94,7 +93,7 @@ private:
     //升级和删除
     cocos2d::ui::Button* dltButton;
     cocos2d::ui::Button* upgButton;
-
+    cocos2d::ui::Button* noupgButton;
 };
 
 #endif // __HELLOWORLD_SCENE_H__

@@ -65,6 +65,9 @@ public:
     //通知怪物到达终点的事件
     void notifyReachedDestination();
 
+    //  通知怪物死去事件
+    void notifyDead();
+
     // 检查怪物是否到达终点
     bool hasReachedDestination() const;
 
